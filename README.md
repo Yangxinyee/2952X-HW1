@@ -1,9 +1,11 @@
 ## MAE Galaxy Dataset Project
 
 ### Setup
-1. Create env: `conda create -n mae-hw1 python=3.10`
-2. Activate: `conda activate mae-hw1`
-3. Install: `pip install -r requirements.txt`
+1. Clone repository: `git clone https://github.com/Yangxinyee/2952X-HW1.git`
+2. Navigate to project: `cd 2952X-HW1`
+3. Create env: `conda create -n mae-hw1 python=3.10`
+4. Activate: `conda activate mae-hw1`
+5. Install: `pip install -r requirements.txt`
 
 ### Project structure
 ```
