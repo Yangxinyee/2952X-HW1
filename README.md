@@ -48,43 +48,17 @@ python -m mae_galaxy.experiments.run_experiments \\
 
 - masking_ablation
 ```bash
-python -m mae_galaxy.experiments.run_experiments 
---experiment masking_ablation 
---masked_only_loss 
---use_hf 
---init_encoder imagenet_mae 
---epochs_mae 200
---epochs_probe 150
---output_dir ./outputs 
---save_every 100 
---keep_best
+python -m mae_galaxy.experiments.run_experiments --experiment masking_ablation --masked_only_loss --use_hf --init_encoder imagenet_mae --epochs_mae 200 --epochs_probe 150 --output_dir ./outputs --save_every 100 --keep_best
 ```
 
 - decoder_depth_ablation
 ```bash
-python -m mae_galaxy.experiments.run_experiments 
---experiment decoder_depth_ablation 
---masked_only_loss 
---use_hf 
---init_encoder imagenet_mae 
---epochs_mae 200
---epochs_probe 150
---output_dir ./outputs 
---save_every 100 
---keep_best
+python -m mae_galaxy.experiments.run_experiments --experiment decoder_depth_ablation --masked_only_loss --use_hf --init_encoder imagenet_mae --epochs_mae 200 --epochs_probe 150 --output_dir ./outputs --save_every 100 --keep_best
 ```
 
 - encoder_freezing_comparison
 ```bash
-python -m mae_galaxy.experiments.run_experiments     
---experiment encoder_freezing_comparison     
---output_dir ./outputs     
---epochs_mae 200     
---epochs_probe 150
---use_hf     
---keep_best     
---masked_only_loss     
---save_every 200
+python -m mae_galaxy.experiments.run_experiments --experiment encoder_freezing_comparison --output_dir ./outputs --epochs_mae 200 --epochs_probe 150 --use_hf --keep_best --masked_only_loss --save_every 200
 ```
 
 
