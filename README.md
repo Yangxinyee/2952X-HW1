@@ -34,16 +34,7 @@ mae_galaxy/
 ### Example
 - method_comparison
 ```bash
-python -m mae_galaxy.experiments.run_experiments \\
---experiment method_comparison \\
---epochs_mae 200 \\
---masked_only_loss \\
---init_encoder imagenet_mae \\
---epochs_probe 150 \\
---mask_ratio 0.9 \\
---decoder_depth 4 \\
---use_hf \\
---keep_best
+python -m mae_galaxy.experiments.run_experiments --experiment method_comparison --epochs_mae 200 --masked_only_loss --init_encoder imagenet_mae --epochs_probe 150 --mask_ratio 0.9 --decoder_depth 4 --use_hf --keep_best
 ```
 
 - masking_ablation
