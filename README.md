@@ -1,5 +1,18 @@
 ## MAE Galaxy Dataset Project
 
+### Environment Requirements
+- **GPU**: NVIDIA RTX A6000 (or similar)
+- **CUDA**: 12.1+ (tested with 12.2)
+- **Python**: 3.10
+- **Key Dependencies**:
+  - PyTorch: 2.8.0 (with CUDA 12.8)
+  - torchvision: 0.23.0
+  - timm: 1.0.19
+  - datasets: 4.1.0
+  - numpy: 2.2.6
+  - pandas: 2.3.2
+  - matplotlib: 3.10.6
+
 ### Setup
 1. Clone repository: `git clone https://github.com/Yangxinyee/2952X-HW1.git`
 2. Navigate to project: `cd 2952X-HW1`
