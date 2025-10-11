@@ -18,7 +18,7 @@ from mae_galaxy.utils.visualization import plot_curve_from_csv
 def main() -> None:
     parser = argparse.ArgumentParser(description="Linear Probe")
     parser.add_argument("--data_root", type=str, default="./data")
-    parser.add_argument("--encoder", type=str, choices=["random", "imagenet", "mae"], default="random")
+    parser.add_argument("--encoder", type=str, choices=["random", "imagenet", "mae", "imagenet_mae"], default="random")
     parser.add_argument("--mae_ckpt", type=str, default="", help="Path to MAE checkpoint when --encoder mae")
     parser.add_argument("--batch_size", type=int, default=64)
     parser.add_argument("--epochs", type=int, default=150)
@@ -44,12 +44,14 @@ def main() -> None:
         transforms.RandomRotation(15),
         transforms.ColorJitter(0.1, 0.1, 0.1, 0.05),
         transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
     
     # Validation transforms without augmentation
     val_tf = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
     
     if args.use_hf:
@@ -85,9 +87,38 @@ def main() -> None:
             else:
                 feats = encoder(x)
             if feats.dim() == 3:
+                # Use CLS token for consistency with MAE
                 feats = feats[:, 0] if feats.size(1) > 1 else feats.mean(dim=1)
             return feats
-    else:
+    elif args.encoder == "imagenet_mae":
+        # Load ImageNet pretrained MAE encoder directly from timm
+        import timm
+        mae = MAEModel()
+        mae_vit = timm.create_model("vit_base_patch16_224.mae", pretrained=True)
+        state = mae_vit.state_dict()
+        # Prefix encoder. to match our MAEModel module names
+        prefixed = {}
+        for k, v in state.items():
+            if k.startswith(("patch_embed", "pos_embed", "cls_token", "blocks", "norm")):
+                prefixed[f"encoder.{k}"] = v
+        mae.load_state_dict(prefixed, strict=False)
+        mae.to(device)
+        if freeze_encoder:
+            for p in mae.parameters():
+                p.requires_grad = False
+            mae.eval()
+        feat_dim = 768
+        print(f"Loaded ImageNet pretrained MAE encoder from timm")
+
+        def extract_feats(x: torch.Tensor) -> torch.Tensor:
+            if freeze_encoder:
+                with torch.no_grad():
+                    _, _, enc_tokens, cls_token = mae(x)
+            else:
+                _, _, enc_tokens, cls_token = mae(x)
+            # Use CLS token for consistency with ImageNet ViT
+            return cls_token.squeeze(1)
+    else:  # args.encoder == "mae"
         if not args.mae_ckpt:
             raise ValueError("--mae_ckpt is required when --encoder mae")
         mae = MAEModel()
@@ -99,14 +130,16 @@ def main() -> None:
                 p.requires_grad = False
             mae.eval()
         feat_dim = 768
+        print(f"Loaded MAE checkpoint from {args.mae_ckpt}")
 
         def extract_feats(x: torch.Tensor) -> torch.Tensor:
             if freeze_encoder:
                 with torch.no_grad():
-                    _, _, enc_tokens = mae(x)
+                    _, _, enc_tokens, cls_token = mae(x)
             else:
-                _, _, enc_tokens = mae(x)
-            return enc_tokens.mean(dim=1)
+                _, _, enc_tokens, cls_token = mae(x)
+            # Use CLS token for consistency with ImageNet ViT
+            return cls_token.squeeze(1)
 
     classifier = nn.Linear(feat_dim, num_classes).to(device)
 

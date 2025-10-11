@@ -70,7 +70,7 @@ def main() -> None:
         run(
             f"python -m mae_galaxy.training.linear_probe"
             f" --data_root {args.data_root}"
-            f" --encoder imagenet"
+            f" --encoder imagenet_mae"
             f" --epochs {args.epochs_probe}"
             f" --output_dir {img_dir}"
             f" --save_every {args.save_every}"

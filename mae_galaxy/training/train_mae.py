@@ -48,6 +48,7 @@ def main() -> None:
     except Exception:
         pass
 
+    # Use ImageNet normalization for consistency with pretrained models
     train_tf = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.RandomHorizontalFlip(),
@@ -55,6 +56,7 @@ def main() -> None:
         transforms.RandomRotation(15),
         transforms.ColorJitter(0.1, 0.1, 0.1, 0.05),
         transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
 
     if args.use_hf:
@@ -109,19 +111,15 @@ def main() -> None:
     log_path = str(Path(args.output_dir) / "train_log.csv")
     logger = CSVLogger(log_path, ["epoch", "loss", "lr"]) 
 
-    # Loss-space normalization (Galaxy dataset stats) applied ONLY for loss computation
-    # Computed from training set: mean=[0.168, 0.163, 0.159], std=[0.123, 0.113, 0.106]
-    galaxy_mean = torch.tensor([0.167775, 0.162880, 0.159137], device=device).view(1, 3, 1, 1)
-    galaxy_std = torch.tensor([0.122556, 0.113329, 0.106091], device=device).view(1, 3, 1, 1)
-
+    # No additional normalization needed - input is already ImageNet normalized
     def normalize_for_loss(x: torch.Tensor) -> torch.Tensor:
-        return (x - galaxy_mean) / galaxy_std
+        return x
     for epoch in range(args.epochs):
         running_loss = 0.0
         num_samples = 0
         for batch_idx, (imgs, _) in enumerate(dl):
             imgs = imgs.to(device)
-            recons, mask, _ = model(imgs)
+            recons, mask, _, _ = model(imgs)
 
             if args.masked_only_loss:
                 # Compute MSE on masked patches only

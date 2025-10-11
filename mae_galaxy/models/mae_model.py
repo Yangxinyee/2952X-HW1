@@ -20,7 +20,7 @@ def random_masking(x: torch.Tensor, mask_ratio: float) -> Tuple[torch.Tensor, to
 
 
 class MAEModel(nn.Module):
-    def __init__(self, img_size: int = 224, patch_size: int = 16, encoder_dim: int = 768, decoder_dim: int = 512, decoder_depth: int = 4, mask_ratio: float = 0.75) -> None:
+    def __init__(self, img_size: int = 224, patch_size: int = 16, encoder_dim: int = 768, decoder_dim: int = 512, decoder_depth: int = 8, mask_ratio: float = 0.75) -> None:
         super().__init__()
         self.mask_ratio = mask_ratio
         self.patch_size = patch_size
@@ -67,7 +67,8 @@ class MAEModel(nn.Module):
         for blk in self.encoder.blocks:
             x_keep = blk(x_keep)
         x_keep = self.encoder.norm(x_keep)
-        enc_tokens = x_keep[:, 1:, :]  # remove cls
+        cls_token_final = x_keep[:, 0:1, :]  # extract cls token
+        enc_tokens = x_keep[:, 1:, :]  # remove cls for decoder
 
         B, N, C = x.shape
         num_mask = N - enc_tokens.shape[1]
@@ -78,7 +79,7 @@ class MAEModel(nn.Module):
         dec_tokens = self.decoder(dec_tokens)
         pred = self.decoder_pred(dec_tokens)
         recons = self.unpatchify(pred)
-        return recons, mask, enc_tokens
+        return recons, mask, enc_tokens, cls_token_final
 
 
 
